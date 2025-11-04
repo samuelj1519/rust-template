@@ -1,0 +1,50 @@
+# cargo-generate configuration file
+# https://github.com/cargo-generate/cargo-generate#include--exclude
+
+[template]
+# 👇 1. 跳过替换的文件（保留原样）
+# 这些文件里含有 Tera 模板语法 {{ }}，会与 Handlebars 冲突。
+exclude = [
+  "cliff.toml",
+  "CHANGELOG.md"
+]
+
+# 👇 2. 可选：显式包含特定目录
+# 如果想控制生成范围，可用 include，只生成指定目录/文件。
+# include = ["src/**", "Cargo.toml", "README.md"]
+
+# 👇 3. 新项目目录命名策略
+# 用户输入 project-name（默认为当前目录名）
+# 用于 cargo generate 提问时的默认行为。
+# name = "{{project-name}}"
+
+# 👇 4. 提示交互（可选）
+# 可让用户在生成时自定义信息。
+# variables = [
+#   { name = "author", prompt = "Your name:", default = "anonymous" },
+#   { name = "description", prompt = "Project description", default = "A Rust project" },
+# ]
+
+# 👇 5. 模板渲染选项
+# 是否跳过隐藏文件（以 . 开头的文件）渲染
+# default_include_hidden = true
+
+# 👇 6. 后期说明
+# 生成完后 cargo-generate 会输出提示。
+# helpful for onboarding.
+post_generate_message = """
+✅ Project successfully generated!
+
+Next steps:
+1. cd {{project-name}}
+2. cargo build
+3. git-cliff -o CHANGELOG.md
+
+Note:
+cliff.toml has been kept intact for git-cliff template compatibility.
+"""
+
+# 👇 7. 可选：钩子脚本
+# 例如生成后自动初始化 git。
+# [hooks]
+# post = ["git init", "git add .", "git commit -m 'init project'"]

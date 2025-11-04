@@ -4,8 +4,10 @@
 [changelog]
 # changelog header
 header = """
+{{{{raw}}}}
 # Changelog\n
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.\n
+{{{{/raw}}}}
 """
 # template for the changelog body
 # https://keats.github.io/tera/docs/#introduction

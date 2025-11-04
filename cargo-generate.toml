@@ -5,8 +5,8 @@
 # 👇 1. 跳过替换的文件（保留原样）
 # 这些文件里含有 Tera 模板语法 {{ }}，会与 Handlebars 冲突。
 exclude = [
-  "cliff.toml",
-  "CHANGELOG.md"
+  # "cliff.toml",
+  # "CHANGELOG.md"
 ]
 
 # 👇 2. 可选：显式包含特定目录

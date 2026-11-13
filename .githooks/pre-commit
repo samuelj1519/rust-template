@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+export CARGO_NET_OFFLINE=true RUSTUP_AUTO_INSTALL=0
+export RUSTC_WRAPPER='' RUSTC_WORKSPACE_WRAPPER=''
+export CARGO_TARGET_DIR="$PWD/target"
+cargo fmt --all --check
+cargo clippy --workspace --all-targets --all-features --locked --offline -- -D warnings
+cargo test --workspace --all-targets --all-features --locked --offline
+cargo test --workspace --doc --all-features --locked --offline

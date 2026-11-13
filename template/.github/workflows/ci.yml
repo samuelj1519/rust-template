@@ -1,0 +1,74 @@
+name: Rust checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@1.100.0
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2.9.3
+      - run: cargo fetch --locked
+      - name: Formatting
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features --locked --offline -- -D warnings
+      - name: All target tests
+        run: cargo test --workspace --all-targets --all-features --locked --offline
+      - name: Documentation tests
+        run: cargo test --workspace --doc --all-features --locked --offline
+
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@1.100.0
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@v2.90.3
+        with:
+          tool: cargo-deny@0.20.2,cargo-llvm-cov@0.9.1,typos@1.52.1,taplo@0.10.0
+      - uses: Swatinem/rust-cache@v2.9.3
+      - name: Prepare dependencies and security data
+        run: |
+          cargo fetch --locked
+          cargo deny fetch db
+      - name: Spelling
+        run: typos
+      - name: TOML formatting and syntax
+        shell: bash
+        run: |
+          git ls-files -z -- '*.toml' | xargs -0 taplo fmt --check
+          git ls-files -z -- '*.toml' | xargs -0 taplo check
+      - name: Dependency advisories, sources, and licenses
+        run: cargo deny --all-features --offline --locked check
+      - name: Coverage policy
+        shell: bash
+        run: |
+          mkdir -p target/coverage
+          cargo llvm-cov --workspace --all-targets --all-features --locked --offline --json --summary-only --fail-under-lines 100 --fail-under-functions 100 --fail-under-regions 100 --output-path target/coverage/workspace.json
+      - name: Coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: workspace-coverage
+          path: target/coverage/workspace.json
+          if-no-files-found: error

@@ -1,0 +1,36 @@
+[graph]
+all-features = false
+
+[advisories]
+version = 2
+git-fetch-with-cli = true
+yanked = "deny"
+
+[licenses]
+version = 2
+confidence-threshold = 0.9
+unused-allowed-license = "allow"
+allow = [
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

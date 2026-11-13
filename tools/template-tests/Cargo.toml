@@ -1,0 +1,31 @@
+[package]
+name = "rust-template-tools"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.100.0"
+publish = false
+license = "MIT"
+
+[[test]]
+name = "template_generation"
+path = "tests/template_generation.rs"
+
+[dev-dependencies]
+serde_json = "=1.0.154"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+print_stdout = "warn"
+module_name_repetitions = "allow"
+
+[workspace]

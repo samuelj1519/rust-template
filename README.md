@@ -1,0 +1,40 @@
+# rust-template
+
+An MIT-licensed Rust workspace with a small standard-library example in `crates/app`.
+
+## Development
+
+```bash
+cargo fmt
+cargo clippy
+cargo test
+```
+
+Run the strict checks used by CI before submitting changes:
+
+```bash
+cargo fmt --all --check
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo test --workspace --all-targets --all-features --locked
+cargo test --workspace --doc --all-features --locked
+```
+
+The example uses the Rust standard library. Add crates and dependencies when the project needs them; update `Cargo.lock` after changing package names or dependencies. The workspace lint policy applies to every member.
+
+## Quality and security
+
+CI checks formatting, spelling, TOML, Clippy, all target tests, documentation tests, dependency advisories, sources, licenses, and coverage. The fully tested starting example establishes 100% line, function, and region coverage; changes to this policy require an explicit project decision. See [verification](docs/verification.md).
+
+Enable the optional commit checks for this repository with `git config --local core.hooksPath .githooks`.
+
+## Template
+
+Create another workspace with the community `cargo-generate` extension:
+
+```bash
+cargo generate --git https://github.com/samuelj1519/rust-template template --name my-project --no-workspace
+```
+
+## License
+
+[MIT](LICENSE). Keep the original copyright notice when reusing the scaffold, and add notices for your own contributions as appropriate.

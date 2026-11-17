@@ -2,7 +2,7 @@
 
 This isolated package maintains and tests the generator. Its manifest defines a separate workspace.
 
-`cargo test --all-targets --all-features --locked` runs the generation contracts and coverage-report unit tests. The bootstrap contract renders `template/` as `rust-template`, compares its complete core file set and bytes with the repository, and compares independent same-name generations. Extra maintainer files are excluded explicitly from the reverse repository scan.
+`cargo test --all-targets --all-features --locked` runs the generation contracts and coverage-report unit tests. The bootstrap contract renders `template/` as `rust-template`, compares its complete core file set and bytes with the tracked repository files, and compares independent same-name generations. Ignored and untracked working-tree files are not part of that set. Extra maintainer files are excluded explicitly from the reverse repository scan.
 
 The generated application remains a single standard-library example. Tests preserve its original three assertions and execute formatting, strict Clippy, target tests, and separate doctests. Negative probes verify real lint inheritance and runtime assertion failures. Sensitive-file and symlink cases use synthetic fixtures.
 

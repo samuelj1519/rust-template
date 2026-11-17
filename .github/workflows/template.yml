@@ -108,7 +108,8 @@ jobs:
             exit 1
           fi
           previous="$(mktemp -d)"
-          git -C "$repository" archive "$base" | tar -x -C "$previous"
+          # The contract tests list files with git, so the previous host must be a checkout, not an archive.
+          git -C "$repository" worktree add --detach "$previous" "$base"
           if [[ ! -f "$previous/tools/template-tests/tests/template_generation.rs" ]]; then
             echo 'The contract host is a new measurement object.'
             exit 0

@@ -10,7 +10,7 @@ cargo clippy
 cargo test
 ```
 
-Run the strict checks used by CI before submitting changes:
+Run these local workspace checks before submitting changes. CI runs the Clippy and test commands with `--offline`. It also runs typos, taplo, cargo-deny, and coverage. See [verification](docs/verification.md).
 
 ```bash
 cargo fmt --all --check

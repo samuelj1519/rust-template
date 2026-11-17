@@ -90,6 +90,27 @@ fn cargo() -> Command {
     Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()))
 }
 
+// `fs::canonicalize` on Windows returns a `\\?\` path. Git for Windows can
+// `access` that form, then `fopen` rejects `?` as an illegal character and
+// reports ENOENT. Config loading therefore exits 128 with no earlier warning.
+// Give Git the legacy `C:\...` spelling. Other paths stay unchanged.
+fn git_config_path(path: &Path) -> PathBuf {
+    match path.to_str() {
+        Some(text) => PathBuf::from(without_windows_verbatim_disk_prefix(text)),
+        None => path.to_path_buf(),
+    }
+}
+
+fn without_windows_verbatim_disk_prefix(path: &str) -> &str {
+    let Some(rest) = path.strip_prefix(r"\\?\") else {
+        return path;
+    };
+    match rest.as_bytes() {
+        [drive, b':', b'\\', ..] if drive.is_ascii_alphabetic() => rest,
+        _ => path,
+    }
+}
+
 fn run(command: &mut Command, directory: &Path, target: &Path) -> io::Result<Output> {
     for key in [
         "CARGO_BUILD_TARGET_DIR",
@@ -119,7 +140,10 @@ fn run(command: &mut Command, directory: &Path, target: &Path) -> io::Result<Out
         .env("CARGO_TERM_COLOR", "never")
         .env("RUSTUP_AUTO_INSTALL", "0")
         .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env("GIT_CONFIG_GLOBAL", target.join("empty-git-config"))
+        .env(
+            "GIT_CONFIG_GLOBAL",
+            git_config_path(&target.join("empty-git-config")),
+        )
         .output()
 }
 
@@ -237,7 +261,7 @@ fn unignored_files(root: &Path, empty_git_config: &Path) -> io::Result<BTreeMap<
     }
     command
         .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env("GIT_CONFIG_GLOBAL", empty_git_config);
+        .env("GIT_CONFIG_GLOBAL", git_config_path(empty_git_config));
     let output = command.output()?;
     succeeds(&output)?;
     let mut files = BTreeMap::new();
@@ -697,6 +721,32 @@ fn parent_workspace_is_not_automatically_modified() -> TestResult {
         "nested-project",
     )?;
     Ok(())
+}
+
+#[test]
+fn git_config_path_omits_windows_verbatim_disk_prefix() {
+    assert_eq!(
+        git_config_path(Path::new(r"\\?\C:\Temp\isolated build\empty-git-config")),
+        Path::new(r"C:\Temp\isolated build\empty-git-config")
+    );
+    assert_eq!(
+        git_config_path(Path::new(r"D:\a\rust-template\empty-git-config")),
+        Path::new(r"D:\a\rust-template\empty-git-config")
+    );
+    assert_eq!(
+        git_config_path(Path::new("/tmp/isolated build/empty-git-config")),
+        Path::new("/tmp/isolated build/empty-git-config")
+    );
+    assert_eq!(
+        git_config_path(Path::new(r"\\?\UNC\server\share\empty-git-config")),
+        Path::new(r"\\?\UNC\server\share\empty-git-config")
+    );
+    #[cfg(unix)]
+    {
+        use std::os::unix::ffi::OsStringExt;
+        let path = PathBuf::from(std::ffi::OsString::from_vec(vec![0xff]));
+        assert_eq!(git_config_path(&path), path);
+    }
 }
 
 #[test]

@@ -1,4 +1,4 @@
 [template]
 cargo_generate_version = ">=0.26.0"
-include = ["README.md", "Cargo.lock", "crates/app/Cargo.toml"]
+include = ["README.md", "Cargo.lock", "crates/app/Cargo.toml", "crates/app/src/lib.rs"]
 ignore = [".env", ".aws", ".cargo/credentials", ".cargo/credentials.toml"]

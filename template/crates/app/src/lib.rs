@@ -1,6 +1,12 @@
 //! Example library exposing [`normalize_whitespace`].
 
 /// Trim surrounding whitespace and collapse each internal run to one space.
+///
+/// ```
+/// use {{crate_name}}::normalize_whitespace;
+///
+/// assert_eq!(normalize_whitespace("  a \n\t b  "), "a b");
+/// ```
 #[must_use]
 pub fn normalize_whitespace(input: &str) -> String {
     input.split_whitespace().collect::<Vec<_>>().join(" ")

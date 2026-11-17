@@ -69,15 +69,6 @@ impl Drop for Fixture {
     }
 }
 
-#[derive(Debug)]
-struct DeleteFile(PathBuf);
-
-impl Drop for DeleteFile {
-    fn drop(&mut self) {
-        let _ = fs::remove_file(&self.0);
-    }
-}
-
 const CLEARED_GIT_ENV: &[&str] = &[
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -235,12 +226,18 @@ fn copy_directory(source: &Path, destination: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn tracked_files(root: &Path) -> io::Result<BTreeMap<PathBuf, Vec<u8>>> {
+fn unignored_files(root: &Path, empty_git_config: &Path) -> io::Result<BTreeMap<PathBuf, Vec<u8>>> {
     let mut command = Command::new("git");
-    command.arg("-C").arg(root).args(["ls-files", "-z"]);
+    command
+        .arg("-C")
+        .arg(root)
+        .args(["ls-files", "-z", "-c", "-o", "--exclude-standard"]);
     for key in CLEARED_GIT_ENV {
         command.env_remove(key);
     }
+    command
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_GLOBAL", empty_git_config);
     let output = command.output()?;
     succeeds(&output)?;
     let mut files = BTreeMap::new();
@@ -704,20 +701,14 @@ fn parent_workspace_is_not_automatically_modified() -> TestResult {
 
 #[test]
 fn rendered_template_reproduces_repository_common_files() -> TestResult {
-    let probe = repository().join(format!(
-        "parity-untracked-{}-{}.txt",
-        std::process::id(),
-        NEXT_FIXTURE.fetch_add(1, Ordering::Relaxed)
-    ));
-    fs::write(&probe, "not a core file\n")?;
-    let _probe = DeleteFile(probe);
     let fixture = Fixture::new()?;
     succeeds(&fixture.generate(&template(), "rust-template")?)?;
     let project = fixture.parent.join("rust-template");
     assert_identity(&fixture, &project, "rust-template")?;
     let files = generated_files(&project)?;
     assert!(!files.is_empty());
-    let mut repository_files = tracked_files(&repository())?;
+    let mut repository_files =
+        unignored_files(&repository(), &fixture.target.join("empty-git-config"))?;
     repository_files.retain(|relative, _| {
         !relative.starts_with("template")
             && !relative.starts_with("tools/template-tests")

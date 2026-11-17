@@ -4,7 +4,7 @@ The repository is a workspace rendered from its own `template/` input. Its core 
 
 ## Core checks
 
-Use the commands in README.md. Changes to shared files belong in `template/` first, then regenerate the repository core using the project name `rust-template`. The bootstrap contract compares every generated core file with the tracked repository files and compares two independent generations. Ignored and untracked working-tree files are not part of that set.
+Use the commands in README.md. Changes to shared files belong in `template/` first, then regenerate the repository core using the project name `rust-template`. The bootstrap contract compares every generated core file with the repository files Git does not ignore, including untracked files, and compares two independent generations. Ignored working-tree files are not part of that set.
 
 ## Template contracts
 
